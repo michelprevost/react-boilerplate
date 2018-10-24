@@ -1,33 +1,38 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+/* eslint-disable */
+const merge = require('webpack-merge');
+// Plugins
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const Visualizer = require('webpack-visualizer-plugin');
+// Configs
+const baseConfig = require('./webpack.base.config');
 
-module.exports = {
-  entry: './src/index.js',
-  output: {
-    path: path.join(__dirname, '/dist'),
-    filename: 'bundle.js'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader'
+const prodConfiguration = env => {
+  return merge([
+    {
+      optimization: {
+        // runtimeChunk: 'single',
+        // splitChunks: {
+        //   cacheGroups: {
+        //     vendor: {
+        //       test: /[\\/]node_modules[\\/]/,
+        //       name: 'vendors',
+        //       chunks: 'all'
+        //     }
+        //   }
+        // },
+        minimizer: [new UglifyJsPlugin()]
       },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      },
-      {
-        test: /\.scss$/,
-        use: ['style-loader', 'css-loader', 'sass-loader']
-      }
-    ]
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './src/index.html',
-      filename: './index.html'
-    })
-  ]
+      plugins: [
+        new MiniCssExtractPlugin(),
+        new OptimizeCssAssetsPlugin(),
+        new Visualizer({ filename: './statistics.html' })
+      ]
+    }
+  ]);
+};
+
+module.exports = env => {
+  return merge(baseConfig(env), prodConfiguration(env));
 };
